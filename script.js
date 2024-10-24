@@ -1,51 +1,65 @@
-// script.js
-const taskList = document.getElementById('taskList');
-const completedTaskList = document.getElementById('completedTaskList');
-const progressBar = document.getElementById('progress');
-const progressPercentage = document.getElementById('progressPercentage');
+// Initialize tasks arrays
+let tasks = [];
+let completedTasks = [];
 
-let totalTasks = 0;
-let completedTasks = 0;
+// Function to display tasks
+function displayTasks() {
+    const taskList = document.getElementById("taskList");
+    const completedList = document.getElementById("completedList");
 
-// Simulate adding a task
-document.getElementById('addTaskBtn').addEventListener('click', function() {
-    const task = document.getElementById('task').value;
-    const description = document.getElementById('description').value;
-    const dueDate = document.getElementById('dueDate').value;
-    const category = document.getElementById('category').value;
+    // Clear existing tasks
+    taskList.innerHTML = '';
+    completedList.innerHTML = '';
 
-    if (task && description && dueDate && category) {
-        totalTasks++;
-        const li = document.createElement('li');
-        li.innerHTML = `${task} <button class="completeBtn">Complete</button>`;
+    // Add current tasks to the list
+    tasks.forEach((task, index) => {
+        const li = document.createElement("li");
+        li.innerHTML = `${task.task} - ${task.description} (Due: ${task.dueDate}) - <span class="category">${task.category}</span>`;
         taskList.appendChild(li);
-        
-        // Reset input fields
-        document.getElementById('task').value = '';
-        document.getElementById('description').value = '';
-        document.getElementById('dueDate').value = '';
-        document.getElementById('category').value = '';
+    });
 
-        updateProgress();
+    // Add completed tasks to the list
+    completedTasks.forEach((task) => {
+        const li = document.createElement("li");
+        li.textContent = task;
+        completedList.appendChild(li);
+    });
+}
 
-        // Add event listener for completion
-        li.querySelector('.completeBtn').addEventListener('click', function() {
-            li.remove();
-            completedTasks++;
-            updateProgress();
-            viewCompletedTasks(task);
-        });
-    }
+// Handle form submission
+document.getElementById("task-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const taskInput = document.getElementById("task").value;
+    const descriptionInput = document.getElementById("description").value;
+    const dueDateInput = document.getElementById("dueDate").value;
+    const categoryInput = document.getElementById("category").value;
+
+    const newTask = {
+        task: taskInput,
+        description: descriptionInput,
+        dueDate: dueDateInput,
+        category: categoryInput
+    };
+
+    tasks.push(newTask);
+    displayTasks();
+
+    // Clear the form inputs
+    this.reset();
 });
 
-function viewCompletedTasks(task) {
-    const li = document.createElement('li');
-    li.textContent = task;
-    completedTaskList.appendChild(li);
-}
+// Handle completing tasks
+document.getElementById("completeButton").addEventListener("click", function() {
+    const completeInput = document.getElementById("completeTask").value;
+    const taskIndex = tasks.findIndex(t => t.task === completeInput);
 
-function updateProgress() {
-    const progress = (completedTasks / totalTasks) * 100;
-    progressBar.style.width = `${progress}%`;
-    progressPercentage.textContent = `${Math.round(progress)}%`;
-}
+    if (taskIndex !== -1) {
+        completedTasks.push(`${tasks[taskIndex].task} - ${tasks[taskIndex].description} (Due: ${tasks[taskIndex].dueDate})`);
+        tasks.splice(taskIndex, 1);
+        displayTasks();
+        document.getElementById("completeTask").value = ''; // Clear the input
+    } else {
+        alert("Task not found!");
+    }
+});

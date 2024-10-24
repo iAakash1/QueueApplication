@@ -227,6 +227,15 @@ class TaskQueue {
             return;
         }
         let latestTask = this.front;
+        let curr = this.front;
+
+        while (curr !== null) {
+            if (new Date(curr.dueDate) > new Date(latestTask.dueDate)) {
+                latestTask = curr;
+            }
+            curr = curr.next;
+        }
+
         console.log(`Task with the latest deadline: "${latestTask.task}" [Due: ${latestTask.dueDate}, Category: ${latestTask.category}, Status: ${latestTask.isComplete ? "Complete" : "Incomplete"}]`);
     }
 
@@ -258,8 +267,8 @@ function main() {
         console.log("8. Show Progress");
         console.log("9. Dequeue Highest Priority Task");
         console.log("10. View Tasks by Category");
-        console.log("11. View latest deadline task");
-        console.log("12. Clear all tasks");
+        console.log("11. View Latest Deadline Task");
+        console.log("12. Clear All Tasks");
         console.log("0. Exit");
 
         choice = prompt("Enter your choice: "); // Use prompt to get user input
@@ -294,7 +303,7 @@ function main() {
                 break;
             }
             case 6: {
-                const taskName = prompt("Enter task name to delete: ");
+                const taskName = prompt("Enter the task name to delete: ");
                 queue.deleteTask(taskName);
                 break;
             }
@@ -319,13 +328,13 @@ function main() {
                 queue.clearAllTasks();
                 break;
             case 0:
-                console.log("Exiting...");
+                console.log("Exiting the task manager...");
                 break;
             default:
-                console.log("Invalid choice, please try again.");
+                console.log("Invalid choice. Please try again.");
         }
     } while (choice !== "0");
 }
 
-// Start the main function
-main();
+// Uncomment to run the main function in a suitable environment
+// main();

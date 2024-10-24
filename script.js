@@ -131,6 +131,32 @@ class TaskQueue {
         return tasks;
     }
 
+    // View tasks by category
+    viewTasksByCategory(category) {
+        const tasks = [];
+        let curr = this.front;
+        while (curr !== null) {
+            if (curr.category.toLowerCase() === category.toLowerCase()) {
+                tasks.push(curr);
+            }
+            curr = curr.next;
+        }
+        return tasks;
+    }
+
+    // Get the latest deadline task
+    getLatestDeadlineTask() {
+        let latestTask = null;
+        let curr = this.front;
+        while (curr !== null) {
+            if (latestTask === null || new Date(curr.dueDate) < new Date(latestTask.dueDate)) {
+                latestTask = curr;
+            }
+            curr = curr.next;
+        }
+        return latestTask;
+    }
+
     // Show progress
     showProgress() {
         const totalTasks = this.totalCount;
@@ -150,10 +176,14 @@ const queue = new TaskQueue();
 const addTaskBtn = document.getElementById('addTaskBtn');
 const viewTasksBtn = document.getElementById('viewTasksBtn');
 const viewCompletedBtn = document.getElementById('viewCompletedBtn');
+const viewTasksByCategoryBtn = document.getElementById('viewTasksByCategoryBtn');
+const latestDeadlineTaskBtn = document.getElementById('latestDeadlineTaskBtn');
 const clearTasksBtn = document.getElementById('clearTasksBtn');
 const showProgressBtn = document.getElementById('showProgressBtn');
+const undoCompletedBtn = document.getElementById('undoCompletedBtn');
 const tasksContainer = document.getElementById('tasksContainer');
 const completedTasksContainer = document.getElementById('completedTasksContainer');
+const latestTaskContainer = document.getElementById('latestTaskContainer');
 
 // Event Listeners
 addTaskBtn.addEventListener('click', () => {
@@ -201,6 +231,40 @@ viewCompletedBtn.addEventListener('click', () => {
     });
 });
 
+viewTasksByCategoryBtn.addEventListener('click', () => {
+    const category = prompt("Enter the category:");
+    if (category) {
+        tasksContainer.innerHTML = `<h2>Tasks in Category: ${category}</h2>`;
+        const tasks = queue.viewTasksByCategory(category);
+        tasks.forEach(task => {
+            const taskElement = document.createElement('div');
+            taskElement.className = 'task';
+            taskElement.innerHTML = `<h3>${task.task}</h3>
+                <p>Description: ${task.description}</p>
+                <p>Due Date: ${task.dueDate}</p>
+                <p>Category: ${task.category}</p>
+                <button onclick="completeTask('${task.task}')">Complete</button>`;
+            tasksContainer.appendChild(taskElement);
+        });
+    }
+});
+
+latestDeadlineTaskBtn.addEventListener('click', () => {
+    const latestTask = queue.getLatestDeadlineTask();
+    latestTaskContainer.innerHTML = '<h2>Latest Deadline Task</h2>';
+    if (latestTask) {
+        const taskElement = document.createElement('div');
+        taskElement.className = 'task';
+        taskElement.innerHTML = `<h3>${latestTask.task}</h3>
+            <p>Description: ${latestTask.description}</p>
+            <p>Due Date: ${latestTask.dueDate}</p>
+            <p>Category: ${latestTask.category}</p>`;
+        latestTaskContainer.appendChild(taskElement);
+    } else {
+        latestTaskContainer.innerHTML += '<p>No tasks available.</p>';
+    }
+});
+
 clearTasksBtn.addEventListener('click', () => {
     queue.clearAllTasks();
     alert('All tasks cleared.');
@@ -209,6 +273,11 @@ clearTasksBtn.addEventListener('click', () => {
 showProgressBtn.addEventListener('click', () => {
     const progress = queue.showProgress();
     alert(`Progress: ${progress.toFixed(2)}%`);
+});
+
+undoCompletedBtn.addEventListener('click', () => {
+    queue.undoCompleted();
+    alert('Last completed task undone.');
 });
 
 // Complete a task

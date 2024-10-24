@@ -15,12 +15,13 @@ body {
     padding: 20px;
     background-color: #fff;
     border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
 }
 
 h1 {
     text-align: center;
     color: #333;
+    margin-bottom: 20px;
 }
 
 form {
@@ -31,24 +32,44 @@ form {
 
 input[type="text"],
 input[type="date"] {
-    padding: 10px;
+    padding: 12px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 16px;
 }
 
 button {
-    padding: 10px;
-    background-color: #28a745;
+    padding: 12px;
+    background-color: #007bff;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 16px;
+    transition: background-color 0.3s;
 }
 
 button:hover {
-    background-color: #218838;
+    background-color: #0056b3;
+}
+
+.task-progress {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.progress-bar {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 20px;
+    background-color: #28a745;
+    width: 0%;
+    transition: width 0.4s;
 }
 
 .task-list, .completed-tasks {
@@ -70,6 +91,11 @@ li {
     margin-bottom: 10px;
     background-color: #e9ecef;
     border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+li:hover {
+    background-color: #d1d1d1;
 }
 
 .controls {
@@ -80,4 +106,7 @@ li {
 
 .controls input {
     flex: 1;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }

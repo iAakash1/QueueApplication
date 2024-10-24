@@ -3,42 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Management System</title>
     <link rel="stylesheet" href="styles.css">
+    <title>Task Management Application</title>
 </head>
 <body>
     <div class="container">
-        <h1>Task Management System</h1>
-        <form id="task-form">
-            <input type="text" id="task" placeholder="Task" required>
+        <h1>Task Management Application</h1>
+        <div class="form-group">
+            <input type="text" id="task" placeholder="Task Name" required>
             <input type="text" id="description" placeholder="Description" required>
             <input type="date" id="dueDate" required>
             <input type="text" id="category" placeholder="Category" required>
-            <button type="submit">Add Task</button>
-        </form>
-
-        <div class="task-progress">
-            <h2>Task Progress</h2>
-            <div class="progress-bar" id="progressBar">
-                <div class="progress" id="progress"></div>
-            </div>
-            <p id="progressText">0% Completed</p>
+            <button id="addTaskBtn">Add Task</button>
         </div>
-
-        <div class="task-list">
-            <h2>Current Tasks</h2>
-            <ul id="taskList"></ul>
+        <div class="task-actions">
+            <button id="viewTasksBtn">View All Tasks</button>
+            <button id="viewCompletedBtn">View Completed Tasks</button>
+            <button id="clearTasksBtn">Clear All Tasks</button>
+            <button id="showProgressBtn">Show Progress</button>
         </div>
-
-        <div class="completed-tasks">
-            <h2>Completed Tasks</h2>
-            <ul id="completedList"></ul>
-        </div>
-
-        <div class="controls">
-            <input type="text" id="completeTask" placeholder="Task to complete">
-            <button id="completeButton">Complete Task</button>
-        </div>
+        <div id="tasksContainer" class="tasks-container"></div>
+        <div id="completedTasksContainer" class="tasks-container"></div>
     </div>
     <script src="script.js"></script>
 </body>

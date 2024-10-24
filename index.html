@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management System</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to the CSS file -->
+</head>
+<body>
+
+<div class="container">
+    <h1>Task Management System</h1>
+
+    <!-- Task Form -->
+    <form id="taskForm">
+        <input type="text" id="taskName" placeholder="Task Name" required>
+        <input type="text" id="description" placeholder="Description" required>
+        <input type="date" id="dueDate" required>
+        <select id="category">
+            <option value="Work">Work</option>
+            <option value="Personal">Personal</option>
+            <option value="Urgent">Urgent</option>
+        </select>
+        <button type="submit">Add Task</button>
+    </form>
+
+    <!-- Task List -->
+    <div class="task-list">
+        <h2>Current Tasks</h2>
+        <div id="tasks"></div>
+    </div>
+
+    <!-- Completed Tasks -->
+    <div class="completed-tasks">
+        <h2>Completed Tasks</h2>
+        <ul id="completedTasks"></ul>
+    </div>
+
+    <!-- Progress -->
+    <div class="task-progress">
+        <h2>Progress</h2>
+        <div class="progress-bar">
+            <div class="progress-bar-inner" id="progressBar"></div>
+        </div>
+        <p id="progressPercentage">0% Complete</p>
+    </div>
+</div>
+
+<script>
+    class Node {
+        constructor(task, description, dueDate, category) {
+            this.task = task;
+            this.description = description;
+            this.dueDate = dueDate;
+            this.category = category;
+            this.isComplete = false;
+            this.next = null;
+        }
+    }
+
+    class TaskQueue {
+        constructor() {
+            this.front = null;
+            this.rear = null;
+            this.completedHead = null;
+            this.completedCount = 0;
+        }
+
+        isEmpty() {
+            return this.front === null;
+        }
+
+        enqueue(task, description, dueDate, category) {
+            const newNode = new Node(task, description, dueDate, category);
+            if (this.isEmpty()) {
+                this.front = this.rear = newNode;
+            } else {
+                let current = this.front;
+                let prev = null;
+
+                while (current !== null && current.dueDate <= newNode.dueDate) {
+                    prev = current;
+                    current = current.next;
+                }
+
+                if (prev === null) {
+                    newNode.next = this.front;
+                    this.front = newNode;
+                } else {
+                    newNode.next = current;
+                    prev.next = newNode;
+                    if (current === null) this.rear = newNode;
+                }
+            }
+            this.updateUI();
+        }
+
+        markComplete(taskName) {
+            let curr = this.front;
+            let prev = null;
+
+            while (curr !== null) {
+                if (curr.task === taskName) {
+                    this.completedCount++;
+                    this.front = curr.next;
+                    this.updateUI();
+                    return;
+                }
+                prev = curr;
+                curr = curr.next;
+            }
+        }
+
+        viewTasks() {
+            const taskContainer = document.getElementById('tasks');
+            taskContainer.innerHTML = '';
+            let curr = this.front;
+
+            while (curr !== null) {
+                const taskDiv = document.createElement('div');
+                taskDiv.className = 'task';
+                taskDiv.innerHTML = `
+                    <span>${curr.task} - Due: ${curr.dueDate}</span>
+                    <button onclick="queue.markComplete('${curr.task}')">Complete</button>
+                `;
+                taskContainer.appendChild(taskDiv);
+                curr = curr.next;
+            }
+        }
+
+        updateUI() {
+            this.viewTasks();
+            document.getElementById('progressPercentage').innerText = `${this.completedCount}% Complete`;
+            document.getElementById('progressBar').style.width = `${this.completedCount}%`;
+        }
+    }
+
+    const queue = new TaskQueue();
+
+    document.getElementById('taskForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const taskName = document.getElementById('taskName').value;
+        const description = document.getElementById('description').value;
+        const dueDate = document.getElementById('dueDate').value;
+        const category = document.getElementById('category').value;
+        queue.enqueue(taskName, description, dueDate, category);
+        event.target.reset();
+    });
+</script>
+
+</body>
+</html>

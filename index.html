@@ -3,21 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Queue Manager</title>
+    <title>Task Management System</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Task Queue Manager</h1>
-        
-        <div class="task-form">
-            <h2>Add Task</h2>
-            <input type="text" id="task" placeholder="Task Name" required>
+        <h1>Task Management System</h1>
+        <form id="task-form">
+            <input type="text" id="task" placeholder="Task" required>
             <input type="text" id="description" placeholder="Description" required>
             <input type="date" id="dueDate" required>
             <input type="text" id="category" placeholder="Category" required>
-            <button id="addTaskBtn">Add Task</button>
-        </div>
+            <button type="submit">Add Task</button>
+        </form>
 
         <div class="task-list">
             <h2>Current Tasks</h2>
@@ -26,18 +24,14 @@
 
         <div class="completed-tasks">
             <h2>Completed Tasks</h2>
-            <ul id="completedTaskList"></ul>
+            <ul id="completedList"></ul>
         </div>
 
-        <div class="progress">
-            <h2>Progress</h2>
-            <div id="progressBar" class="progress-bar">
-                <div id="progress" class="progress-fill"></div>
-            </div>
-            <span id="progressPercentage">0%</span>
+        <div class="controls">
+            <input type="text" id="completeTask" placeholder="Task to complete">
+            <button id="completeButton">Complete Task</button>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>

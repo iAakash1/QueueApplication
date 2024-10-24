@@ -6,6 +6,8 @@ let completedTasks = [];
 function displayTasks() {
     const taskList = document.getElementById("taskList");
     const completedList = document.getElementById("completedList");
+    const progressText = document.getElementById("progressText");
+    const progressBar = document.getElementById("progress");
 
     // Clear existing tasks
     taskList.innerHTML = '';
@@ -24,6 +26,14 @@ function displayTasks() {
         li.textContent = task;
         completedList.appendChild(li);
     });
+
+    // Update progress
+    const totalTasks = tasks.length + completedTasks.length;
+    const completedCount = completedTasks.length;
+    const progressPercentage = totalTasks ? (completedCount / totalTasks) * 100 : 0;
+
+    progressBar.style.width = `${progressPercentage}%`;
+    progressText.textContent = `${Math.round(progressPercentage)}% Completed`;
 }
 
 // Handle form submission

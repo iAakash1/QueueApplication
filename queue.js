@@ -25,6 +25,7 @@ class TaskQueue {
         this.rear = null;
         this.completedHead = null;
         this.completedCount = 0;
+        this.totalCount = 0; // Track the total number of tasks
     }
 
     isEmpty() {
@@ -34,6 +35,7 @@ class TaskQueue {
     // Add task
     enqueue(task, description, dueDate, category) {
         const newNode = new Node(task, description, dueDate, category);
+        this.totalCount++; // Increment total count
 
         if (this.isEmpty()) {
             this.front = this.rear = newNode;
@@ -70,6 +72,7 @@ class TaskQueue {
 
         const temp = this.front;
         this.front = this.front.next;
+        this.totalCount--; // Decrement total count
         console.log(`Task "${temp.task}" [Due: ${temp.dueDate}] removed successfully.`);
         if (this.front === null) this.rear = null;
     }
@@ -170,6 +173,7 @@ class TaskQueue {
                 }
 
                 if (curr === this.rear) this.rear = prev;
+                this.totalCount--; // Decrement total count
                 console.log(`Task "${curr.task}" deleted successfully.`);
                 return;
             }
@@ -198,9 +202,8 @@ class TaskQueue {
 
     // Show progress
     showProgress() {
-        let totalTasks = this.completedCount + (this.front === null ? 0 : 1);
-        let progress = totalTasks === 0 ? 0 : (this.completedCount / totalTasks) * 100;
-        console.log(`Progress: ${progress}%`);
+        let progress = this.totalCount === 0 ? 0 : (this.completedCount / this.totalCount) * 100;
+        console.log(`Progress: ${progress.toFixed(2)}%`);
     }
 
     // View tasks by category
@@ -253,7 +256,9 @@ class TaskQueue {
 
 // Test TaskQueue with basic input/output handling
 const queue = new TaskQueue();
-queue.enqueue("Test Task", "Task Description", "2024-12-01", "Work");
+queue.enqueue("Task 1", "Task Description 1", "2024-12-01", "Work");
+queue.enqueue("Task 2", "Task Description 2", "2024-12-02", "Home");
 queue.viewTasks();
-queue.markComplete("Test Task");
+queue.markComplete("Task 1");
+queue.showProgress(); // Should now show 50%
 queue.viewCompletedTasks();

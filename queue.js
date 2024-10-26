@@ -34,28 +34,35 @@ class TaskQueue {
 
     // Add task
     enqueue(task, description, dueDate, category) {
+        //creation of new node
         const newNode = new Node(task, description, dueDate, category);
-        this.totalCount++; // Increment total count
+        this.totalCount++; // Incrementing total count
 
         if (this.isEmpty()) {
+            //if its empty then insert at front
             this.front = this.rear = newNode;
         } else {
+            //current is at front
+            //prev behind it
             let current = this.front;
             let prev = null;
 
             // Insert based on due date
+            //due date jo hai na vo bada hona chahiye, jaise hi chota hoga stop we got the place
             while (current !== null && current.dueDate <= newNode.dueDate) {
+                //agar jaga nahi mili then aage chalo
                 prev = current;
                 current = current.next;
             }
-
+            //first node hi hai which is to be inserted
             if (prev === null) {
                 newNode.next = this.front;
                 this.front = newNode;
             } else {
+                //else anywhere else might be
                 newNode.next = current;
                 prev.next = newNode;
-
+                //last node pe aa gay hai, insertat end
                 if (current === null) this.rear = newNode;
             }
         }
@@ -69,7 +76,7 @@ class TaskQueue {
             console.log("Queue is empty, cannot dequeue.");
             return;
         }
-
+        //front vla hi hoga highest prefered
         const temp = this.front;
         this.front = this.front.next;
         this.totalCount--; // Decrement total count
@@ -86,6 +93,7 @@ class TaskQueue {
 
         console.log("Current Tasks:");
         let curr = this.front;
+        //index is just for printing purpose
         let index = 1;
         while (curr !== null) {
             console.log(`${index++}. ${curr.task} [Due: ${curr.dueDate}, Status: ${curr.isComplete ? "Complete" : "Incomplete"}]`);
@@ -100,6 +108,7 @@ class TaskQueue {
 
         while (curr !== null) {
             if (curr.task === taskName) {
+                //Completed Link list me update 
                 const completedTask = new CompletedNode(curr.task, curr.description, curr.dueDate, curr.category);
                 this.completedCount++;
                 completedTask.next = this.completedHead;

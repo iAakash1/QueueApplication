@@ -1,178 +1,8 @@
-class Node {
-    constructor(task, description, dueDate, category) {
-        this.task = task;
-        this.description = description;
-        this.dueDate = dueDate;
-        this.category = category;
-        this.isComplete = false;
-        this.next = null;
-    }
-}
-
-class CompletedNode {
-    constructor(task, description, dueDate, category) {
-        this.task = task;
-        this.description = description;
-        this.dueDate = dueDate;
-        this.category = category;
-        this.next = null;
-    }
-}
-
-class TaskQueue {
-    constructor() {
-        this.front = null;
-        this.rear = null;
-        this.completedHead = null;
-        this.completedCount = 0;
-        this.totalCount = 0; // Track the total number of tasks
-    }
-
-    isEmpty() {
-        return this.front === null;
-    }
-
-    // Add task
-    enqueue(task, description, dueDate, category) {
-        const newNode = new Node(task, description, dueDate, category);
-        this.totalCount++; // Increment total count
-
-        if (this.isEmpty()) {
-            this.front = this.rear = newNode;
-        } else {
-            let current = this.front;
-            let prev = null;
-
-            // Insert based on due date
-            while (current !== null && current.dueDate <= newNode.dueDate) {
-                prev = current;
-                current = current.next;
-            }
-
-            if (prev === null) {
-                newNode.next = this.front;
-                this.front = newNode;
-            } else {
-                newNode.next = current;
-                prev.next = newNode;
-
-                if (current === null) this.rear = newNode;
-            }
-        }
-    }
-
-    // Remove the highest priority task
-    dequeueHighestPriority() {
-        if (this.isEmpty()) return null;
-
-        const temp = this.front;
-        this.front = this.front.next;
-        this.totalCount--; // Decrement total count
-        if (this.front === null) this.rear = null;
-        return temp;
-    }
-
-    // Mark a task as complete
-    markComplete(taskName) {
-        let curr = this.front;
-        let prev = null;
-
-        while (curr !== null) {
-            if (curr.task === taskName) {
-                const completedTask = new CompletedNode(curr.task, curr.description, curr.dueDate, curr.category);
-                this.completedCount++;
-                completedTask.next = this.completedHead;
-                this.completedHead = completedTask;
-
-                // Remove from queue
-                if (prev === null) {
-                    this.front = curr.next;
-                } else {
-                    prev.next = curr.next;
-                }
-
-                if (this.front === null) this.rear = null;
-                return;
-            }
-            prev = curr;
-            curr = curr.next;
-        }
-    }
-
-    // Undo a completed task
-    undoCompleted() {
-        if (this.completedHead === null) return;
-
-        const temp = this.completedHead;
-        this.completedHead = this.completedHead.next;
-        this.enqueue(temp.task, temp.description, temp.dueDate, temp.category);
-        this.completedCount--;
-    }
-
-    // View all tasks
-    viewTasks() {
-        const tasks = [];
-        let curr = this.front;
-        while (curr !== null) {
-            tasks.push(curr);
-            curr = curr.next;
-        }
-        return tasks;
-    }
-
-    // View completed tasks
-    viewCompletedTasks() {
-        const tasks = [];
-        let curr = this.completedHead;
-        while (curr !== null) {
-            tasks.push(curr);
-            curr = curr.next;
-        }
-        return tasks;
-    }
-
-    // View tasks by category
-    viewTasksByCategory(category) {
-        const tasks = [];
-        let curr = this.front;
-        while (curr !== null) {
-            if (curr.category.toLowerCase() === category.toLowerCase()) {
-                tasks.push(curr);
-            }
-            curr = curr.next;
-        }
-        return tasks;
-    }
-
-    // Get the latest deadline task
-    getLatestDeadlineTask() {
-        let latestTask = null;
-        let curr = this.front;
-        while (curr !== null) {
-            if (latestTask === null || new Date(curr.dueDate) < new Date(latestTask.dueDate)) {
-                latestTask = curr;
-            }
-            curr = curr.next;
-        }
-        return latestTask;
-    }
-
-    // Show progress
-    showProgress() {
-        const totalTasks = this.totalCount;
-        return (totalTasks === 0) ? 0.0 : (this.completedCount / totalTasks) * 100;
-    }
-
-    // Clear all tasks
-    clearAllTasks() {
-        while (!this.isEmpty()) this.dequeueHighestPriority();
-    }
-}
-
-// Instantiate TaskQueue
-const queue = new TaskQueue();
-
 // DOM Elements
+const taskInput = document.getElementById('task');
+const descriptionInput = document.getElementById('description');
+const dueDateInput = document.getElementById('dueDate');
+const categoryInput = document.getElementById('category');
 const addTaskBtn = document.getElementById('addTaskBtn');
 const viewTasksBtn = document.getElementById('viewTasksBtn');
 const viewCompletedBtn = document.getElementById('viewCompletedBtn');
@@ -185,103 +15,156 @@ const tasksContainer = document.getElementById('tasksContainer');
 const completedTasksContainer = document.getElementById('completedTasksContainer');
 const latestTaskContainer = document.getElementById('latestTaskContainer');
 
-// Event Listeners
-addTaskBtn.addEventListener('click', () => {
-    const task = document.getElementById('task').value;
-    const description = document.getElementById('description').value;
-    const dueDate = document.getElementById('dueDate').value;
-    const category = document.getElementById('category').value;
+// In-memory storage for tasks
+let tasks = [];
+let completedTasks = [];
 
-    if (task && description && dueDate && category) {
-        queue.enqueue(task, description, dueDate, category);
-        document.getElementById('task').value = '';
-        document.getElementById('description').value = '';
-        document.getElementById('dueDate').value = '';
-        document.getElementById('category').value = '';
-        alert(`Task "${task}" added successfully.`);
+// Helper function to create task HTML
+function createTaskHTML(task, isCompleted = false) {
+    const taskElement = document.createElement('div');
+    taskElement.classList.add('task');
+    if (isCompleted) taskElement.classList.add('completed-task');
+
+    taskElement.innerHTML = `
+        <h3>${task.name}</h3>
+        <p><strong>Description:</strong> ${task.description}</p>
+        <p><strong>Due Date:</strong> ${task.dueDate}</p>
+        <p><strong>Category:</strong> ${task.category}</p>
+        <button onclick="markTaskCompleted('${task.name}')">Complete Task</button>
+    `;
+    return taskElement;
+}
+
+// Add new task with date validation
+addTaskBtn.addEventListener('click', () => {
+    const taskName = taskInput.value.trim();
+    const taskDescription = descriptionInput.value.trim();
+    const taskDueDate = dueDateInput.value;
+    const taskCategory = categoryInput.value.trim();
+
+    // Validate if all fields are filled
+    if (!taskName || !taskDescription || !taskDueDate || !taskCategory) {
+        alert('Please fill in all fields');
+        return;
     }
+
+    // Validate date (can't be in the past)
+    const currentDate = new Date();
+    const currentDateString = currentDate.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
+
+    if (taskDueDate < currentDateString) {
+        alert('Due date cannot be in the past!');
+        return;
+    }
+
+    const newTask = {
+        name: taskName,
+        description: taskDescription,
+        dueDate: taskDueDate,
+        category: taskCategory
+    };
+
+    tasks.push(newTask);
+
+    // Clear the inputs
+    taskInput.value = '';
+    descriptionInput.value = '';
+    dueDateInput.value = '';
+    categoryInput.value = '';
+
+    renderTasks();
 });
 
-viewTasksBtn.addEventListener('click', () => {
-    tasksContainer.innerHTML = '<h2>Current Tasks</h2>';
-    const tasks = queue.viewTasks();
+// Mark task as completed
+function markTaskCompleted(taskName) {
+    const taskIndex = tasks.findIndex(task => task.name === taskName);
+    if (taskIndex === -1) return;
+
+    const completedTask = tasks.splice(taskIndex, 1)[0];
+    completedTasks.push(completedTask);
+
+    renderTasks();
+}
+
+// Render tasks
+function renderTasks() {
+    tasksContainer.innerHTML = '';
+    completedTasksContainer.innerHTML = '';
+    latestTaskContainer.innerHTML = '';
+
     tasks.forEach(task => {
-        const taskElement = document.createElement('div');
-        taskElement.className = 'task';
-        taskElement.innerHTML = `<h3>${task.task}</h3>
-            <p>Description: ${task.description}</p>
-            <p>Due Date: ${task.dueDate}</p>
-            <p>Category: ${task.category}</p>
-            <button onclick="completeTask('${task.task}')">Complete</button>`;
+        const taskElement = createTaskHTML(task);
+        tasksContainer.appendChild(taskElement);
+    });
+
+    completedTasks.forEach(task => {
+        const taskElement = createTaskHTML(task, true);
+        completedTasksContainer.appendChild(taskElement);
+    });
+}
+
+// View all tasks
+viewTasksBtn.addEventListener('click', () => {
+    tasksContainer.style.display = 'block';
+    completedTasksContainer.style.display = 'none';
+    latestTaskContainer.style.display = 'none';
+});
+
+// View completed tasks
+viewCompletedBtn.addEventListener('click', () => {
+    tasksContainer.style.display = 'none';
+    completedTasksContainer.style.display = 'block';
+    latestTaskContainer.style.display = 'none';
+});
+
+// View tasks by category
+viewTasksByCategoryBtn.addEventListener('click', () => {
+    const category = prompt('Enter category to view tasks:');
+    const filteredTasks = tasks.filter(task => task.category.toLowerCase() === category.toLowerCase());
+
+    tasksContainer.innerHTML = '';
+    filteredTasks.forEach(task => {
+        const taskElement = createTaskHTML(task);
         tasksContainer.appendChild(taskElement);
     });
 });
 
-viewCompletedBtn.addEventListener('click', () => {
-    completedTasksContainer.innerHTML = '<h2>Completed Tasks</h2>';
-    const tasks = queue.viewCompletedTasks();
-    tasks.forEach(task => {
-        const taskElement = document.createElement('div');
-        taskElement.className = 'task completed-task';
-        taskElement.innerHTML = `<h3>${task.task}</h3>
-            <p>Description: ${task.description}</p>
-            <p>Due Date: ${task.dueDate}</p>
-            <p>Category: ${task.category}</p>`;
-        completedTasksContainer.appendChild(taskElement);
-    });
-});
-
-viewTasksByCategoryBtn.addEventListener('click', () => {
-    const category = prompt("Enter the category:");
-    if (category) {
-        tasksContainer.innerHTML = `<h2>Tasks in Category: ${category}</h2>`;
-        const tasks = queue.viewTasksByCategory(category);
-        tasks.forEach(task => {
-            const taskElement = document.createElement('div');
-            taskElement.className = 'task';
-            taskElement.innerHTML = `<h3>${task.task}</h3>
-                <p>Description: ${task.description}</p>
-                <p>Due Date: ${task.dueDate}</p>
-                <p>Category: ${task.category}</p>
-                <button onclick="completeTask('${task.task}')">Complete</button>`;
-            tasksContainer.appendChild(taskElement);
-        });
-    }
-});
-
+// Show task with the latest deadline
 latestDeadlineTaskBtn.addEventListener('click', () => {
-    const latestTask = queue.getLatestDeadlineTask();
-    latestTaskContainer.innerHTML = '<h2>Latest Deadline Task</h2>';
-    if (latestTask) {
-        const taskElement = document.createElement('div');
-        taskElement.className = 'task';
-        taskElement.innerHTML = `<h3>${latestTask.task}</h3>
-            <p>Description: ${latestTask.description}</p>
-            <p>Due Date: ${latestTask.dueDate}</p>
-            <p>Category: ${latestTask.category}</p>`;
-        latestTaskContainer.appendChild(taskElement);
-    } else {
-        latestTaskContainer.innerHTML += '<p>No tasks available.</p>';
-    }
+    const latestTask = tasks.reduce((latest, current) => {
+        return new Date(current.dueDate) > new Date(latest.dueDate) ? current : latest;
+    }, tasks[0]);
+
+    latestTaskContainer.innerHTML = '';
+    const taskElement = createTaskHTML(latestTask);
+    latestTaskContainer.appendChild(taskElement);
+    tasksContainer.style.display = 'none';
+    completedTasksContainer.style.display = 'none';
+    latestTaskContainer.style.display = 'block';
 });
 
+// Clear all tasks
 clearTasksBtn.addEventListener('click', () => {
-    queue.clearAllTasks();
-    alert('All tasks cleared.');
+    tasks = [];
+    completedTasks = [];
+    renderTasks();
 });
 
+// Show progress (percentage of tasks completed)
 showProgressBtn.addEventListener('click', () => {
-    const progress = queue.showProgress();
-    alert(`Progress: ${progress.toFixed(2)}%`);
+    const totalTasks = tasks.length + completedTasks.length;
+    const completedPercentage = totalTasks ? (completedTasks.length / totalTasks) * 100 : 0;
+    alert(`Progress: ${completedPercentage.toFixed(2)}%`);
 });
 
+// Undo completed task
 undoCompletedBtn.addEventListener('click', () => {
-    queue.undoCompleted();
-    alert('Last completed task undone.');
+    if (completedTasks.length === 0) return;
+
+    const lastCompletedTask = completedTasks.pop();
+    tasks.push(lastCompletedTask);
+    renderTasks();
 });
 
-// Complete a task
-function completeTask(taskName) {
-    queue.markComplete(taskName);
-    alert(`Task "${taskName}" marked as complete.`);
-}
+// Initial render
+renderTasks();
